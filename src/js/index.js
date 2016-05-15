@@ -26,7 +26,7 @@ const DAY = 1000*60*60*24;
 class TimelineApp extends Component {
   constructor(props) {
     super(props);
-    this.state = {width:window.innerWidth};
+    this.state = {width:window.innerWidth - 30};
     this.resize = this.resize.bind(this);
   }
 
@@ -39,11 +39,13 @@ class TimelineApp extends Component {
   }
 
   days(first, second) {
-    return (second.date - first.date) / DAY;
+    const f = first.date ? first.date : first;
+    const s = second.date ? second.date : second;
+    return (s - f) / DAY;
   }
 
   resize() {
-    this.setState({width: window.innerWidth});
+    this.setState({width: window.innerWidth - 30});
   }
 
   render() {
@@ -51,12 +53,12 @@ class TimelineApp extends Component {
     let themes = Timeline.themes.map((theme) => {
       let first = null;
       return theme.events.map((event, i) => {
-        if (! earliest || event < earliest) {
-          earliest = event;
+        if (!earliest || event.date < earliest) {
+          earliest = event.date;
         }
 
-        if (! last || event > last) {
-          last = event;
+        if (!last || event.date > last) {
+          last = event.date;
         }
 
         if (i === 0) {
@@ -66,6 +68,7 @@ class TimelineApp extends Component {
           const ret = {
             start: first.name,
             end: event.name,
+            begin: first.date,
             days: this.days(first, event)
           };
           first = event;
@@ -74,16 +77,51 @@ class TimelineApp extends Component {
       }).filter((n) => n);
     });
 
-    console.log(themes);
+    earliest.setDate(1);
+    earliest.setMonth(0);
+    last.setDate(31);
+    last.setMonth(11);
+    const adjustment = this.state.width / this.days(earliest, last);
+
+    let iter = new Date(earliest);
+    iter.setFullYear(iter.getFullYear() - 1);
+
+    const _years = Array.apply(null, Array(1 + last.getFullYear() - earliest.getFullYear())).map((_, i) => {
+      const x = i * 365 * adjustment || 1;
+      iter.setFullYear(iter.getFullYear() + 1);
+      return [
+        (<line key={"year-" + iter.getFullYear()} x1={x} y1={HEIGHT/2 - 5} x2={x} y2={HEIGHT/2 + 12} />),
+        (<text key={"year-text-" + iter.getFullYear()} x={x+2} y={HEIGHT/2 + 10}>{iter.getFullYear()}</text>)
+      ];
+    });
+
+    iter.setFullYear(iter.getFullYear() + 1);
+    const lastYear = _years.length * 365 * adjustment;
+    _years.push((<line key={"year-" + iter.getFullYear()} x1={lastYear} y1={HEIGHT/2 - 5} x2={lastYear} y2={HEIGHT/2 + 12} />));
+    _years.push((<text key={"year-text-" + iter.getFullYear()} x={lastYear-2} y={HEIGHT/2 + 10} textAnchor="end">{iter.getFullYear()}</text>));
+    _years.push((<line key={"years-line"} x1="0" y1={HEIGHT/2} x2={this.state.width} y2={HEIGHT/2} />));
+
+    const _themes = themes.map((theme, i) => {
+      let start = this.days(earliest, theme[0].begin) * adjustment;
+      return theme.map((range, j) => {
+        const offset = i % 2 === 0 ? 22 + (i/2 * 17) : (-8 + -i/2 * 17);
+        const width = range.days * adjustment;
+        const rect = (<rect key={"theme-" + i + "-range-" + j} x={start} y={HEIGHT/2 - offset} width={width} height="12" style={{fill:'blue',stroke:'pink'}}/>);
+        start += width;
+        return rect;
+      });
+    }).reduce((a, b) => {
+      return a.concat(b);
+    }, []);
 
     return (
       <div>
-      <svg width={this.state.width} height={HEIGHT}>
-        <g width={this.state.width} height={HEIGHT}>
-        <rect x="0" y="20" width={this.state.width-10} height="150" style={{fill:'blue',stroke:'pink'}}/>
-        </g>
-      </svg>
-      {this.state.width}
+        <svg width={this.state.width} height={HEIGHT}>
+          <g width={this.state.width} height={HEIGHT}>
+            {_years}
+            {_themes}
+          </g>
+        </svg>
       </div>
     );
   }

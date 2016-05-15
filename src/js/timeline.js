@@ -27,7 +27,29 @@ export default {
       name: "B.S. CS",
       date: new Date('2012-12-08')
     }]
-  }], events: [
-
-  ]
+  }, {
+    name: "Army",
+    events: [{
+      name: "Enlist",
+      date: new Date('2003-08-17')
+    }, {
+      name: "Basic",
+      date: new Date('2004-06-23')
+    }, {
+      name: 'Deploy Iraq',
+      date: new Date('2004-10-23')
+    }, {
+      name: 'Deploy Afgn',
+      date: new Date('2011-02-04')
+    }]
+  }, {
+    name: "HPE",
+    events: [{
+      name: "Intern",
+      date: new Date('2008-05-23')
+    }, {
+      name: "Intermediate",
+      date: new Date('2012-07-23')
+    }]
+  }]
 };

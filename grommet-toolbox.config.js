@@ -1,6 +1,7 @@
 import path from 'path';
 
 export default {
+  base: '.',
   dist: path.resolve(__dirname, 'dist'),
   devServerPort: 1337,
   copyAssets: [

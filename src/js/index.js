@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import 'index.scss';
+import '../scss/index.scss';
 
 import React, { Component } from 'react';
 import { render } from 'react-dom';
@@ -30,20 +30,20 @@ class TimelineApp extends Component {
     this.resize = this.resize.bind(this);
   }
 
-  resize() {
-    this.setState({width: window.innerWidth});
-  }
-
-  days(first, second) {
-    return (second.date - first.date) / DAY;
-  }
-
   componentDidMount() {
     window.addEventListener('resize', this.resize);
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.resize);
+  }
+
+  days(first, second) {
+    return (second.date - first.date) / DAY;
+  }
+
+  resize() {
+    this.setState({width: window.innerWidth});
   }
 
   render() {
@@ -54,26 +54,27 @@ class TimelineApp extends Component {
         if (! earliest || event < earliest) {
           earliest = event;
         }
-        
+
         if (! last || event > last) {
           last = event;
         }
 
         if (i === 0) {
           first = event;
+          return null;
         } else {
           const ret = {
             start: first.name,
             end: event.name,
             days: this.days(first, event)
-          }
+          };
           first = event;
           return ret;
         }
       }).filter((n) => n);
     });
 
-    console.log(themes)
+    console.log(themes);
 
     return (
       <div>

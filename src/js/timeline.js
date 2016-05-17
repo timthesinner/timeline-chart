@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
+//Tetrad #4 255,79,0
 export default {
   themes: [{
     name: "School",
+    color: [255,149,0],//Tetrad #3
     events: [{
       name: "Start CSU",
       date: new Date('2005-01-28')
@@ -29,6 +31,7 @@ export default {
     }]
   }, {
     name: "Army",
+    color: [0,172,107],//Tetrad #1
     events: [{
       name: "Enlist",
       date: new Date('2003-08-17')
@@ -41,15 +44,31 @@ export default {
     }, {
       name: 'Deploy Afgn',
       date: new Date('2011-02-04')
+    }, {
+      name: 'Honorable Discharge',
+      date: new Date('2012-08-17')
     }]
   }, {
     name: "HPE",
+    color: [12,93,165],//Tetrad #2
     events: [{
       name: "Intern",
       date: new Date('2008-05-23')
     }, {
       name: "Intermediate",
       date: new Date('2012-07-23')
+    }, {
+      name: 'Current',
+      date: new Date()
     }]
+  }],
+  events: [{
+    name: "Cert SA",
+    theme: "HPE",
+    date: new Date('2016-05-24')
+  }, {
+    name: "Honor Grad",
+    theme: "Army",
+    date: new Date('2012-02-28')
   }]
 };

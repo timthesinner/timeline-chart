@@ -20,7 +20,13 @@ import React, { Component } from 'react';
 import { render } from 'react-dom';
 
 import Timeline from 'timeline';
-const HEIGHT = 200;
+const THEMES = Timeline.themes.reduce((a, theme, i) => {
+  a[theme.name] = theme;
+  theme.index = i;
+  return a;
+}, {});
+console.log(THEMES);
+
 const DAY = 1000*60*60*24;
 
 class TimelineApp extends Component {
@@ -50,6 +56,7 @@ class TimelineApp extends Component {
 
   render() {
     let earliest, last = null;
+
     let themes = Timeline.themes.map((theme) => {
       let first = null;
       return theme.events.map((event, i) => {
@@ -67,6 +74,7 @@ class TimelineApp extends Component {
         } else {
           const ret = {
             start: first.name,
+            color: 'rgb(' + theme.color.join(',') + ')',
             end: event.name,
             begin: first.date,
             days: this.days(first, event)
@@ -77,8 +85,28 @@ class TimelineApp extends Component {
       }).filter((n) => n);
     });
 
+    let events = Timeline.events.map((event) => {
+      const theme = THEMES[event.theme];
+      if (theme) {
+        if (!earliest || event.date < earliest) {
+          earliest = event.date;
+        }
+
+        if (!last || event.date > last) {
+          last = event.date;
+        }
+
+        event.color = 'rgb(' + theme.color.join(',') + ')';
+        event.index = theme.index;
+        return event;
+      }
+      return null;
+    }).filter((n) => n);
+
+    earliest = new Date(earliest);
     earliest.setDate(1);
     earliest.setMonth(0);
+    last = new Date(last);
     last.setDate(31);
     last.setMonth(11);
     const adjustment = this.state.width / this.days(earliest, last);
@@ -86,6 +114,7 @@ class TimelineApp extends Component {
     let iter = new Date(earliest);
     iter.setFullYear(iter.getFullYear() - 1);
 
+    const HEIGHT = 90 + 18 + ((themes.length) * 17);//36,52,69,86
     const _years = Array.apply(null, Array(1 + last.getFullYear() - earliest.getFullYear())).map((_, i) => {
       const x = i * 365 * adjustment || 1;
       iter.setFullYear(iter.getFullYear() + 1);
@@ -106,10 +135,22 @@ class TimelineApp extends Component {
       return theme.map((range, j) => {
         const offset = i % 2 === 0 ? 22 + (i/2 * 17) : (-8 + -i/2 * 17);
         const width = range.days * adjustment;
-        const rect = (<rect key={"theme-" + i + "-range-" + j} x={start} y={HEIGHT/2 - offset} width={width} height="12" style={{fill:'blue',stroke:'pink'}}/>);
+        const rect = (<rect key={"theme-" + i + "-range-" + j} x={start} y={HEIGHT/2 - offset} width={width} height="12" stroke-width="0"   style={{fill:range.color,stroke:range.color}}/>);
         start += width;
         return rect;
       });
+    }).reduce((a, b) => {
+      return a.concat(b);
+    }, []);
+
+    const _events = events.map((event, i) => {
+      const x = this.days(earliest, event.date) * adjustment;
+      const offset = HEIGHT/2 + 6 - (event.index % 2 === 0 ? 22 + (event.index/2 * 17) : (-8 + -event.index/2 * 17));
+      return [
+        (<line key={"event-line-" + i} x1={x} y1={offset} x2={x} y2={event.index % 2 ? offset+20 : offset-20} style={{stroke:'grey'}}/>),
+        (<text key={"event-text-" + i} x={x} y={event.index % 2 ? offset+30 : offset-30} textAnchor="middle"style={{fill:event.color}}>{event.name}</text>),
+        (<circle key={"event-circle-" + i} cx={x} cy={offset} r="3" stroke-width="0" fill='grey' />)
+      ];
     }).reduce((a, b) => {
       return a.concat(b);
     }, []);
@@ -120,6 +161,7 @@ class TimelineApp extends Component {
           <g width={this.state.width} height={HEIGHT}>
             {_years}
             {_themes}
+            {_events}
           </g>
         </svg>
       </div>
